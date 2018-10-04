@@ -21,8 +21,8 @@ public class ReactiveTemplate implements ReactiveBehavior {
 	private double pPickup;
 	private int numActions;
 	private Agent myAgent;
-	private int[][] pickupRewardTable;
-	private int[][] moveRewardTable;
+	private double[][][] pickupRewardTable;
+	private double[][][] moveRewardTable;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
@@ -33,23 +33,11 @@ public class ReactiveTemplate implements ReactiveBehavior {
 				0.95);
 		
 		List<City> allCities = topology.cities();
-		this.pickupRewardTable = new int[allCities.size()][allCities.size()];
-		this.moveRewardTable = new int[allCities.size()][allCities.size()];
+		List<Vehicle> allVehicles = agent.vehicles();
+		RewardTables rewardTables = new RewardTables(allVehicles,allCities,td);
 		
-		for (int i = 0; i < allCities.size(); ++i) {
-			City fromCity = allCities.get(i);
-			if (fromCity.id != i) {
-				System.out.println("Not same");
-			}
-			for (int j = 0; j < allCities.size(); ++j) {
-				City toCity = allCities.get(j);
-				if (toCity.id != j) {
-					System.out.println("Not same");
-				}
-				this.pickupRewardTable[i][j] = td.reward(fromCity, toCity);
-				this.moveRewardTable[i][j] = td.reward(fromCity, toCity);
-			}
-		}
+		this.pickupRewardTable = rewardTables.PickupRewardTable;
+		this.moveRewardTable = rewardTables.MoveRewardTable;
 		
 		this.random = new Random();
 		this.pPickup = discount;
