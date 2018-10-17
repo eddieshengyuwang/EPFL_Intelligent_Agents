@@ -11,6 +11,9 @@ import logist.task.TaskSet;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * An optimal planner for one vehicle.
  */
