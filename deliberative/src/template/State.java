@@ -2,22 +2,67 @@ package template;
 
 import java.util.List;
 import logist.topology.Topology.City;
+import logist.task.Task;
 import logist.task.TaskSet;
 import logist.plan.Plan;
+import logist.plan.Action;
 
 public class State {
 	public City currentCity;
 	public TaskSet availableTasks;
+	public TaskSet tasksToDeliver;
 	public double costSoFar;
-	public int capacity;
+	public double capacity;
 	public Plan plan;
 	
-	public State(City currentCity, TaskSet availableTasks, double costSoFar, int capacity, Plan plan) {
+	public State(City currentCity, TaskSet availableTasks, TaskSet tasksToDeliver, double costSoFar, double capacity) {
 		this.currentCity = currentCity;
 		this.availableTasks = availableTasks;
+		this.tasksToDeliver = tasksToDeliver;
 		this.costSoFar = costSoFar;
 		this.capacity = capacity;
+	}
+	
+	public State applyMove(City dest, double cost) {
+		double newCost = costSoFar + cost;
+		
+		return new State(dest, availableTasks, availableTasks, newCost, capacity); 
+	}
+	
+	public State applyPickup(Task task) {
+		
+		TaskSet nextStateTasks = availableTasks.clone();
+		nextStateTasks.remove(task);
+		
+		TaskSet nextStateDeliveries = tasksToDeliver.clone();
+		nextStateDeliveries.add(task);
+		
+		double newCapacity = capacity - task.weight;
+
+		return new State(currentCity, nextStateTasks, nextStateDeliveries, costSoFar, newCapacity); 
+	}
+
+	public State applyDelivery(Task task) {
+
+		TaskSet nextStateDeliveries = tasksToDeliver.clone();
+		nextStateDeliveries.add(task);
+		
+		double newCapacity = capacity + task.weight;
+
+		return new State(currentCity, availableTasks, nextStateDeliveries, costSoFar,newCapacity); 
+	}
+	
+
+	public void setPlan(Plan plan) {
 		this.plan = plan;
+	}
+
+	public Plan getPlan() {
+		return this.plan;
+	}
+	
+	public boolean isFinalState() {
+		return (availableTasks.size() == 0) && (tasksToDeliver.size() == 0);
 	}
 	
 	@Override
@@ -25,12 +70,14 @@ public class State {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((availableTasks == null) ? 0 : availableTasks.hashCode());
-		result = prime * result + capacity;
 		long temp;
+		temp = Double.doubleToLongBits(capacity);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(costSoFar);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + ((currentCity == null) ? 0 : currentCity.hashCode());
 		result = prime * result + ((plan == null) ? 0 : plan.hashCode());
+		result = prime * result + ((tasksToDeliver == null) ? 0 : tasksToDeliver.hashCode());
 		return result;
 	}
 
@@ -48,7 +95,7 @@ public class State {
 				return false;
 		} else if (!availableTasks.equals(other.availableTasks))
 			return false;
-		if (capacity != other.capacity)
+		if (Double.doubleToLongBits(capacity) != Double.doubleToLongBits(other.capacity))
 			return false;
 		if (Double.doubleToLongBits(costSoFar) != Double.doubleToLongBits(other.costSoFar))
 			return false;
@@ -61,6 +108,11 @@ public class State {
 			if (other.plan != null)
 				return false;
 		} else if (!plan.equals(other.plan))
+			return false;
+		if (tasksToDeliver == null) {
+			if (other.tasksToDeliver != null)
+				return false;
+		} else if (!tasksToDeliver.equals(other.tasksToDeliver))
 			return false;
 		return true;
 	}
