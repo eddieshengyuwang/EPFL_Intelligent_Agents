@@ -15,6 +15,8 @@ import logist.topology.Topology.City;
 
 public class BFS {
 	
+	public BFS() {}
+	
 	private Plan BFS(Vehicle vehicle, TaskSet pickUpTasks, TaskSet DeliverTasks) {
 		
 		City current = vehicle.getCurrentCity();
@@ -49,8 +51,7 @@ public class BFS {
 					Q.add(successor);
 					successor.setPlan(plan);
 					
-				}
-				
+				}				
 				// pickup at current city
 				// add another state if there is a task to be picked up at current city
 				
@@ -64,7 +65,11 @@ public class BFS {
 						State successor = n.applyPickup(task);
 						Q.add(successor);
 						successor.setPlan(plan);
-					} 
+					} else {
+						List<City> citiesOnPath = n.currentCity.pathTo(task.pickupCity);
+						City nextMove = citiesOnPath.get(0);
+						
+					}
 			    }
 				
 				// deliver at current city 
@@ -78,11 +83,14 @@ public class BFS {
 						State successor = n.applyDelivery(task);
 						Q.add(successor);
 						successor.setPlan(plan);
-					} 
+					} else {
+						List<City> citiesOnPath = n.currentCity.pathTo(task.deliveryCity);
+						City nextMove = citiesOnPath.get(0);
+						
+					}
 			    }
 			}
 		}
-		
 		
 		return plan;
 	}
