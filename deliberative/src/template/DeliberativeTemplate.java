@@ -45,7 +45,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		
 		// Throws IllegalArgumentException if algorithm is unknown
 		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
-		
+		algorithm = Algorithm.valueOf("BFS");
 		// ...
 	}
 	
@@ -61,14 +61,22 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			break;
 		case BFS:
 			// ...
-			plan = naivePlan(vehicle, tasks);
+			//plan = naivePlan(vehicle, tasks);
+			plan = BFS_alg(vehicle, tasks);
 			break;
 		default:
 			throw new AssertionError("Should not happen.");
 		}		
 		return plan;
 	}
-	
+	private Plan BFS_alg(Vehicle vehicle, TaskSet tasks) {
+		BFS bfs_class = new BFS();
+		
+		TaskSet empty = tasks.noneOf(tasks);
+		
+		Plan plan = bfs_class.BFS(vehicle, tasks, empty);
+		return plan;
+	}
 	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);

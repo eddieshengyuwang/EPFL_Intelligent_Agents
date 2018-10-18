@@ -17,7 +17,7 @@ public class BFS {
 	
 	public BFS() {}
 	
-	private Plan BFS(Vehicle vehicle, TaskSet pickUpTasks, TaskSet DeliverTasks) {
+	public Plan BFS(Vehicle vehicle, TaskSet pickUpTasks, TaskSet DeliverTasks) {
 		
 		City current = vehicle.getCurrentCity();
 		int costPerKm = vehicle.costPerKm();
@@ -34,41 +34,41 @@ public class BFS {
 		
 		while (!Q.isEmpty()) {
 			State n = Q.remove();
-			if (n.availableTasks.size() == 0) {
+			
+			if (n.isFinalState()) {
 				return n.plan;
 			}
-			if (map.get(n) != null) {
+			
+			if (map.get(n) == null) {
 				
 				map.put(n, true);
 				
-				// move to city
-				for (City city : n.currentCity.neighbors()) {
-
-					plan.appendMove(city);
-					
-					double cost = n.currentCity.distanceTo(city) * costPerKm;
-					State successor = n.applyMove(city, cost);
-					Q.add(successor);
-					successor.setPlan(plan);
-					
-				}				
 				// pickup at current city
 				// add another state if there is a task to be picked up at current city
-				
+				Map<State, Boolean> visited_neighbours = new HashMap<State, Boolean>();
+
 				for (Task task : n.availableTasks) {
 					
 					if (task.weight > n.capacity) continue;
-					
+					Plan new_plan = plan;
 					if (n.currentCity.equals(task.pickupCity)) {
 						
-						plan.appendPickup(task);
+						new_plan.appendPickup(task);
 						State successor = n.applyPickup(task);
 						Q.add(successor);
-						successor.setPlan(plan);
+						successor.setPlan(new_plan);
 					} else {
+						
 						List<City> citiesOnPath = n.currentCity.pathTo(task.pickupCity);
 						City nextMove = citiesOnPath.get(0);
+						new_plan.appendMove(nextMove);
+						double cost = n.currentCity.distanceTo(nextMove) * costPerKm;
+						State successor = n.applyMove(nextMove, cost);
 						
+						if (visited_neighbours.get(successor) == null) {
+							Q.add(successor);
+							successor.setPlan(new_plan);
+						}
 					}
 			    }
 				
@@ -76,17 +76,25 @@ public class BFS {
 				// add another state if there is a task to be delivered at current city
 
 				for (Task task : n.tasksToDeliver) {
-					
+					Plan new_plan = plan;
+
 					if (n.currentCity.equals(task.deliveryCity)) {
 						
-						plan.appendDelivery(task);
+						new_plan.appendDelivery(task);
 						State successor = n.applyDelivery(task);
 						Q.add(successor);
-						successor.setPlan(plan);
+						successor.setPlan(new_plan);
 					} else {
-						List<City> citiesOnPath = n.currentCity.pathTo(task.deliveryCity);
+						List<City> citiesOnPath = n.currentCity.pathTo(task.pickupCity);
 						City nextMove = citiesOnPath.get(0);
+						new_plan.appendMove(nextMove);
+						double cost = n.currentCity.distanceTo(nextMove) * costPerKm;
+						State successor = n.applyMove(nextMove, cost);
 						
+						if (visited_neighbours.get(successor) == null) {
+							Q.add(successor);
+							successor.setPlan(new_plan);
+						}
 					}
 			    }
 			}
