@@ -7,12 +7,12 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/LogistLibrary"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/logist.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/repast.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/plot.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/jsolver.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/jdom.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/commons-math-1.1.jar"/>
-	<classpathentry kind="lib" path="/home/eddie/Documents/Swiss/CS430/workspace/logist/lib/colt.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/colt.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/commons-math-1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/jdom.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/jsolver.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/plot.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/lib/repast.jar"/>
+	<classpathentry kind="lib" path="/Users/xinyicheng/Downloads/logist/logist.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
