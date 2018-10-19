@@ -1,5 +1,6 @@
 package template;
 
+import java.util.ArrayList;
 import java.util.List;
 import logist.topology.Topology.City;
 import logist.task.Task;
@@ -14,6 +15,7 @@ public class State {
 	public double costSoFar;
 	public double capacity;
 	public Plan plan;
+	public List<Action> actions;
 	
 	public State(City currentCity, TaskSet availableTasks, TaskSet tasksToDeliver, double costSoFar, double capacity) {
 		this.currentCity = currentCity;
@@ -21,6 +23,7 @@ public class State {
 		this.tasksToDeliver = tasksToDeliver;
 		this.costSoFar = costSoFar;
 		this.capacity = capacity;
+		this.actions = new ArrayList<Action>();
 	}
 	
 	public State applyMove(City dest, double cost) {

@@ -7,11 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import logist.plan.Action;
 import logist.plan.Plan;
 import logist.simulation.Vehicle;
 import logist.task.TaskSet;
 import logist.task.Task;
 import logist.topology.Topology.City;
+import logist.plan.Action.Delivery;
+import logist.plan.Action.Move;
+import logist.plan.Action.Pickup;
 
 public class BFS {
 	
@@ -25,9 +29,6 @@ public class BFS {
 		Queue<State> Q = new LinkedList<State>();		
 		State start = new State(current, pickUpTasks, DeliverTasks, 0.0, vehicle.capacity());
 		
-		Plan plan = new Plan(current);
-		start.setPlan(plan);
-
 		Q.add(start);
 		
 		Map<State, Boolean> map = new HashMap<State, Boolean>();
@@ -36,7 +37,8 @@ public class BFS {
 			State n = Q.remove();
 			
 			if (n.isFinalState()) {
-				return n.plan;
+				Plan plan = new Plan(current, n.actions);
+				return plan;
 			}
 			
 			if (map.get(n) == null) {
@@ -50,24 +52,25 @@ public class BFS {
 				for (Task task : n.availableTasks) {
 					
 					if (task.weight > n.capacity) continue;
-					Plan new_plan = plan;
+					List<Action> new_action = n.actions;
+					
 					if (n.currentCity.equals(task.pickupCity)) {
 						
-						new_plan.appendPickup(task);
+						new_action.add(new Pickup(task));
 						State successor = n.applyPickup(task);
 						Q.add(successor);
-						successor.setPlan(new_plan);
+						successor.actions = new_action;
 					} else {
 						
 						List<City> citiesOnPath = n.currentCity.pathTo(task.pickupCity);
 						City nextMove = citiesOnPath.get(0);
-						new_plan.appendMove(nextMove);
+						new_action.add(new Move(nextMove));
 						double cost = n.currentCity.distanceTo(nextMove) * costPerKm;
 						State successor = n.applyMove(nextMove, cost);
 						
 						if (visited_neighbours.get(successor) == null) {
 							Q.add(successor);
-							successor.setPlan(new_plan);
+							successor.actions = new_action;
 						}
 					}
 			    }
@@ -76,30 +79,30 @@ public class BFS {
 				// add another state if there is a task to be delivered at current city
 
 				for (Task task : n.tasksToDeliver) {
-					Plan new_plan = plan;
+					List<Action> new_action = n.actions;
 
 					if (n.currentCity.equals(task.deliveryCity)) {
 						
-						new_plan.appendDelivery(task);
+						new_action.add(new Delivery(task));
 						State successor = n.applyDelivery(task);
 						Q.add(successor);
-						successor.setPlan(new_plan);
+						successor.actions = new_action;
 					} else {
-						List<City> citiesOnPath = n.currentCity.pathTo(task.pickupCity);
+						List<City> citiesOnPath = n.currentCity.pathTo(task.deliveryCity);
 						City nextMove = citiesOnPath.get(0);
-						new_plan.appendMove(nextMove);
+						new_action.add(new Move(nextMove));
 						double cost = n.currentCity.distanceTo(nextMove) * costPerKm;
 						State successor = n.applyMove(nextMove, cost);
 						
 						if (visited_neighbours.get(successor) == null) {
 							Q.add(successor);
-							successor.setPlan(new_plan);
+							successor.actions = new_action;
 						}
 					}
 			    }
 			}
 		}
 		
-		return plan;
+		return null;
 	}
 }
