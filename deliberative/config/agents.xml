@@ -7,7 +7,17 @@
 	<agent name="deliberative-random">
 		<set class-path="bin/"/>
 		<set class-name="template.DeliberativeTemplate"/>
-		<set algorithm="BFS"/>
+		<set algorithm="ASTAR"></set>
 	</agent>
-	
+<!-- 	<agent name="deliberative-random2">
+		<set class-path="bin/"/>
+		<set class-name="template.DeliberativeTemplate"/>
+		<set algorithm="ASTAR"></set>
+	</agent>
+	<agent name="deliberative-main">
+		<set class-path="bin/"/>
+		<set class-name="template.DeliberativeTemplate"/>
+		<set algorithm="ASTAR"></set>
+	</agent> -->
+
 </agents>

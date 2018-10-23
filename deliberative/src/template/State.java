@@ -8,6 +8,10 @@ import logist.task.TaskSet;
 import logist.plan.Plan;
 import logist.plan.Action;
 
+import logist.plan.Action.Move;
+import logist.plan.Action.Delivery;
+import logist.plan.Action.Pickup;
+
 public class State {
 	public City currentCity;
 	public TaskSet availableTasks;
@@ -16,20 +20,25 @@ public class State {
 	public double capacity;
 	public Plan plan;
 	public List<Action> actions;
+	public State prevState;
+	public Action actionToGetHere;
 	
-	public State(City currentCity, TaskSet availableTasks, TaskSet tasksToDeliver, double costSoFar, double capacity) {
+	public State(City currentCity, TaskSet availableTasks, TaskSet tasksToDeliver, double costSoFar,
+			double capacity, State prevState, Action actionToGetHere) {
 		this.currentCity = currentCity;
 		this.availableTasks = availableTasks;
 		this.tasksToDeliver = tasksToDeliver;
 		this.costSoFar = costSoFar;
 		this.capacity = capacity;
 		this.actions = new ArrayList<Action>();
+		this.prevState = prevState;
+		this.actionToGetHere = actionToGetHere;
 	}
 	
 	public State applyMove(City dest, double cost) {
 		double newCost = costSoFar + cost;
 		
-		return new State(dest, availableTasks, availableTasks, newCost, capacity); 
+		return new State(dest, availableTasks, tasksToDeliver, newCost, capacity, this, new Move(dest)); 
 	}
 	
 	public State applyPickup(Task task) {
@@ -42,17 +51,17 @@ public class State {
 		
 		double newCapacity = capacity - task.weight;
 
-		return new State(currentCity, nextStateTasks, nextStateDeliveries, costSoFar, newCapacity); 
+		return new State(currentCity, nextStateTasks, nextStateDeliveries, costSoFar, newCapacity, this, new Pickup(task)); 
 	}
 
 	public State applyDelivery(Task task) {
 
 		TaskSet nextStateDeliveries = tasksToDeliver.clone();
-		nextStateDeliveries.add(task);
+		nextStateDeliveries.remove(task);
 		
 		double newCapacity = capacity + task.weight;
 
-		return new State(currentCity, availableTasks, nextStateDeliveries, costSoFar,newCapacity); 
+		return new State(currentCity, availableTasks, nextStateDeliveries, costSoFar, newCapacity, this, new Delivery(task)); 
 	}
 	
 
@@ -65,7 +74,7 @@ public class State {
 	}
 	
 	public boolean isFinalState() {
-		return (availableTasks.size() == 0) && (tasksToDeliver.size() == 0);
+		return ((availableTasks.size() == 0) && (tasksToDeliver.size() == 0));
 	}
 	
 	@Override
@@ -75,8 +84,6 @@ public class State {
 		result = prime * result + ((availableTasks == null) ? 0 : availableTasks.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(capacity);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(costSoFar);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + ((currentCity == null) ? 0 : currentCity.hashCode());
 		result = prime * result + ((plan == null) ? 0 : plan.hashCode());
@@ -99,8 +106,6 @@ public class State {
 		} else if (!availableTasks.equals(other.availableTasks))
 			return false;
 		if (Double.doubleToLongBits(capacity) != Double.doubleToLongBits(other.capacity))
-			return false;
-		if (Double.doubleToLongBits(costSoFar) != Double.doubleToLongBits(other.costSoFar))
 			return false;
 		if (currentCity == null) {
 			if (other.currentCity != null)

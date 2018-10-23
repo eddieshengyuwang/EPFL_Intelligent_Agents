@@ -45,7 +45,8 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		
 		// Throws IllegalArgumentException if algorithm is unknown
 		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
-		algorithm = Algorithm.valueOf("BFS");
+		//algorithm = Algorithm.valueOf("BFS");
+		//algorithm = Algorithm.valueOf("ASTAR");
 		// ...
 	}
 	
@@ -57,11 +58,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = naivePlan(vehicle, tasks);
+			plan = ASTAR_alg(vehicle, tasks);
 			break;
 		case BFS:
 			// ...
-			//plan = naivePlan(vehicle, tasks);
 			plan = BFS_alg(vehicle, tasks);
 			break;
 		default:
@@ -74,9 +74,21 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		
 		TaskSet empty = tasks.noneOf(tasks);
 		
-		Plan plan = bfs_class.BFS(vehicle, tasks, empty);
+		Plan plan = bfs_class.BFS(vehicle, tasks, vehicle.getCurrentTasks());
 		return plan;
 	}
+	
+	private Plan ASTAR_alg(Vehicle vehicle, TaskSet tasks) {
+		TaskSet empty = tasks.noneOf(tasks);
+		AStarState start = new AStarState(vehicle.getCurrentCity(), tasks, vehicle.getCurrentTasks(), 0, vehicle.capacity(),
+				vehicle.costPerKm(), null, 0, null);
+		
+		AStarSearch Astar_class = new AStarSearch("hi", start);	
+		Plan plan = Astar_class.algo();
+		System.out.println("Total Distance " + plan.totalDistance());
+		return plan;
+	}
+	
 	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
@@ -104,6 +116,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	public void planCancelled(TaskSet carriedTasks) {
 		
 		if (!carriedTasks.isEmpty()) {
+			
 			// This cannot happen for this simple agent, but typically
 			// you will need to consider the carriedTasks when the next
 			// plan is computed.
