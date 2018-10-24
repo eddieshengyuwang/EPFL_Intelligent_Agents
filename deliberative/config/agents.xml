@@ -4,20 +4,20 @@
 	<!-- A list of agents and their behavior classes -->
 	
 	<!-- #### DELIBERATIVE AGENTS ### -->
-	<agent name="deliberative-random">
+<!--  	<agent name="deliberative-random">
 		<set class-path="bin/"/>
 		<set class-name="template.DeliberativeTemplate"/>
-		<set algorithm="ASTAR"></set>
-	</agent>
-<!-- 	<agent name="deliberative-random2">
+		<set algorithm="BFS"></set>
+	</agent>  -->
+<!--   	<agent name="deliberative-random2">
 		<set class-path="bin/"/>
 		<set class-name="template.DeliberativeTemplate"/>
-		<set algorithm="ASTAR"></set>
-	</agent>
-	<agent name="deliberative-main">
-		<set class-path="bin/"/>
-		<set class-name="template.DeliberativeTemplate"/>
-		<set algorithm="ASTAR"></set>
+		<set algorithm="BFS"></set>
 	</agent> -->
+ 	<agent name="deliberative-main">
+		<set class-path="bin/"/>
+		<set class-name="template.DeliberativeTemplate"/>
+		<set algorithm="BFS"></set>
+	</agent> 
 
 </agents>

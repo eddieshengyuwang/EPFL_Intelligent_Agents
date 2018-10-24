@@ -19,7 +19,7 @@ import logist.plan.Action.Move;
 import logist.plan.Action.Pickup;
 
 
-public class AStarState {
+public class AStarState implements Comparable<AStarState> {
 	public City currentCity;
 	public TaskSet availableTasks;
 	public TaskSet tasksToDeliver;
@@ -122,10 +122,10 @@ public class AStarState {
 		for (Task t : tasksToDeliver) {
 			if (!t.deliveryCity.equals(currentCity)) {
 				List<City> path = currentCity.pathTo(t.deliveryCity);
-				if (path.size() == 0) {
-					System.out.println(currentCity.name);
-					System.out.println(t.pickupCity.name);
-				}
+//				if (path.size() == 0) {
+//					System.out.println(currentCity.name);
+//					System.out.println(t.pickupCity.name);
+//				}
 				City nextCityOnWay = path.get(0);
 				if (map.get(nextCityOnWay.name) == null) {
 					map.put(nextCityOnWay.name, true);
@@ -150,10 +150,10 @@ public class AStarState {
 				// We need to go to this task's pickup site and similarly to the drop case
 				// we add the next city toward it.
 				List<City> path = currentCity.pathTo(t.pickupCity);
-				if (path.size() == 0) {
-					System.out.println(currentCity.name);
-					System.out.println(t.pickupCity.name);
-				}
+//				if (path.size() == 0) {
+//					System.out.println(currentCity.name);
+//					System.out.println(t.pickupCity.name);
+//				}
 				City nextCityOnWay = path.get(0);
 				if (map.get(nextCityOnWay.name) == null) {
 					map.put(nextCityOnWay.name, true);
@@ -223,6 +223,16 @@ public class AStarState {
 	
 	public boolean isFinalState() {
 		return (availableTasks.size() == 0) && (tasksToDeliver.size() == 0);
+	}
+
+	@Override
+	public int compareTo(AStarState o) {
+		if (heuristicCost < o.heuristicCost)
+			return -1;
+		else if (heuristicCost > o.heuristicCost)
+			return 1;
+		else
+			return 0;
 	}
 }
 	

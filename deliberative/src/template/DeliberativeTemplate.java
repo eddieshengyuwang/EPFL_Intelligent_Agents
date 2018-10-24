@@ -29,6 +29,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	/* the properties of the agent */
 	Agent agent;
 	int capacity;
+	double master_time;
 
 	/* the planning class */
 	Algorithm algorithm;
@@ -45,15 +46,14 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		
 		// Throws IllegalArgumentException if algorithm is unknown
 		algorithm = Algorithm.valueOf(algorithmName.toUpperCase());
-		//algorithm = Algorithm.valueOf("BFS");
-		//algorithm = Algorithm.valueOf("ASTAR");
-		// ...
 	}
 	
 	@Override
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
 
+		long startTime = System.currentTimeMillis();
+		
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
 		case ASTAR:
@@ -67,6 +67,12 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		default:
 			throw new AssertionError("Should not happen.");
 		}		
+		
+		long endTime = System.currentTimeMillis();
+		
+		System.out.println("Plan computed in " + (endTime - startTime) / 1000.0 + "s");
+		this.master_time += (endTime - startTime) / 1000.0;
+		System.out.println(master_time);
 		return plan;
 	}
 	private Plan BFS_alg(Vehicle vehicle, TaskSet tasks) {
@@ -85,7 +91,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		
 		AStarSearch Astar_class = new AStarSearch("hi", start);	
 		Plan plan = Astar_class.algo();
-		System.out.println("Total Distance " + plan.totalDistance());
+		// System.out.println("Total Distance " + plan.totalDistance());
 		return plan;
 	}
 	

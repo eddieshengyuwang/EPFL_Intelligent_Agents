@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 import javax.print.attribute.standard.MediaSize.Other;
@@ -18,13 +19,20 @@ import logist.plan.Plan;
 public class AStarSearch {
 	
 	public String heuristic;
-	LinkedList<AStarState> Q;	
+	
+	//LinkedList<AStarState> Q;	
+	
+	private final PriorityQueue<AStarState> queue = new PriorityQueue<AStarState>();
+	
 	Map<AStarState, Boolean> map;
 	
 	public AStarSearch(String heuristic, AStarState start) {
 		this.heuristic = heuristic;
-		this.Q = new LinkedList<AStarState>();
-		this.Q.add(start);
+//		this.Q = new LinkedList<AStarState>();
+//		this.Q.add(start);
+		
+		this.queue.add(start);
+		
 		this.map = new HashMap<AStarState, Boolean>();
 		//this.map.put(start, true);
 	}
@@ -33,9 +41,14 @@ public class AStarSearch {
 		int i = 0;
 		do {
 			i++;
-			System.out.println(i);
-			if (Q.isEmpty()) return null;
-			AStarState node = Q.remove();
+			
+			// System.out.println(i);
+			// if (Q.isEmpty()) return null;
+			// AStarState node = Q.remove();
+			
+			if (queue.isEmpty()) return null;
+			AStarState node = queue.remove();
+//			
 //			if (node.prevState != null) {
 //				System.out.println(node.prevState.currentCity.name 
 //						+ " " + node.actionToGetHere.toLongString() + " " + node.heuristicCost
@@ -51,7 +64,12 @@ public class AStarSearch {
 			}
 			map.put(node, true);
 			List<AStarState> sortedS = heuristicSort(node.getSuccessorStates());
-			merge(sortedS);
+			// merge(sortedS);	
+
+			// if (node.prevState == null || node.prevState.costSoFar > node.costSoFar) {
+				for (AStarState s : sortedS) {
+					queue.add(s);
+				}
 			
 		} while (true);
 	}
@@ -71,20 +89,20 @@ public class AStarSearch {
 		return successorStates;
 	}
 	
-	public void merge(List<AStarState> sortedActions) {
-		int i = 0;
-		int j = 0;
-		while (i < Q.size() && j < sortedActions.size()) {
-			if (Q.get(i).heuristicCost > sortedActions.get(j).heuristicCost) {
-				Q.add(i, sortedActions.get(j));
-				j++;
-			} else {
-				i++;
-			}
-		}
-		while (j < sortedActions.size()) {
-			Q.add(sortedActions.get(j));
-			j++;
-		}
-	}
+//	public void merge(List<AStarState> sortedActions) {
+//		int i = 0;
+//		int j = 0;
+//		while (i < Q.size() && j < sortedActions.size()) {
+//			if (Q.get(i).heuristicCost > sortedActions.get(j).heuristicCost) {
+//				Q.add(i, sortedActions.get(j));
+//				j++;
+//			} else {
+//				i++;
+//			}
+//		}
+//		while (j < sortedActions.size()) {
+//			Q.add(sortedActions.get(j));
+//			j++;
+//		}
+//	}
 }
