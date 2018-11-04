@@ -1,7 +1,10 @@
 package template;
 
 import java.util.List;
+import java.util.Random;
+
 import java.util.ArrayList;
+import java.util.Collections;
 
 import logist.simulation.Vehicle;
 import logist.task.Task;
@@ -15,86 +18,138 @@ public class SLS {
 	public ArrayList<Integer> time;
 	public ArrayList<Vehicle> vehicles;
 	public TaskSet taskSet;
+	public List<Plan> finalPlan;
 	
 	public SLS(ArrayList<Task> nextTasks, ArrayList<Integer> time, 
 			ArrayList<Vehicle> vehicles,  TaskSet tasks) {
 		this.nextTasks = nextTasks;
 		this.time = time;
+		
+		// sort vehicles in constructor desc by capacity
+		vehicles.sort((o1, o2) -> Integer.compare(o2.capacity(), o1.capacity()));
 		this.vehicles = vehicles;
 		this.taskSet = tasks;
 	}
 	
-	public Vehicle getMaxVehicle(List<Vehicle> vehicles) {
-		Vehicle vehicle = null;
-		int maxCap = 0;
-		for (Vehicle v: vehicles) {
-			if (vehicle.capacity() > maxCap) {
-				maxCap = vehicle.capacity();
-				vehicle = v;
-			}
-		}
-		return vehicle;
+	
+	// TODO: define below
+	public boolean isSatisfiable(Solution s) {
+		return false;
 	}
-		
 	
-	public List<Plan> initialPlan(List<Vehicle> vehicles, TaskSet tasks) {
-        long time_start = System.currentTimeMillis();
-        
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-        Plan planVehicle1 = naivePlan(getMaxVehicle(vehicles), tasks);
-        if (planVehicle1 == null) return null; // impossible solution
-
-        List<Plan> plans = new ArrayList<Plan>();
-        plans.add(planVehicle1);
-        while (plans.size() < vehicles.size()) {
-            plans.add(Plan.EMPTY);
-        }
-        
-        long time_end = System.currentTimeMillis();
-        long duration = time_end - time_start;
-        System.out.println("The plan was generated in "+duration+" milliseconds.");
-        
-        return plans;
-    }
-	
-	public List<Plan> SLS_algo(ArrayList<Task> nextTasks, ArrayList<Integer> time, ArrayList<Vehicle> vehicles) {
-		List<Plan> A = initialPlan(vehicles, taskSet);
-		if (A == null) return null; // impossible solution
+	public boolean checkPossible() {
+		Vehicle vehicle = vehicles.get(0); // note vehicles sorted by descending in constructor
+		// so above will be vehicle with max capacity
 		
-		while (true) {
-			List<Plan> A_old = A;
-			List<Plan> neighbours = chooseNeighbours(A_old, nextTasks, time, vehicles);
+		for (Task task : taskSet) {
+        	if (task.weight > vehicle.capacity()) {
+        		// impossible solution
+        		return false;
+        	}
 		}
-		
+		return true;
+	}
+	
+	public List<Plan> SLS_algo() {
+		if (checkPossible()) {
+
+			Solution solution = new Solution(null, null, null, null, vehicles, taskSet);
+			solution.initialize();
+
+			int max_iters = 10000;
+			for (int i = 0; i < max_iters; i++) {
+				Solution solution_old = solution;
+				List<Solution> neighbours = solution_old.choosingNeighbours();
+				solution = localChoice(neighbours);
+
+				if (solution == null) {
+					return null; // Error?
+				}
+
+				if (isSatisfiable(solution)) {
+					return solution.getPlan();
+				}
+			}
+			return solution.getPlan();
+		}
 		return null;
 	}
 	
-	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
-        City current = vehicle.getCurrentCity();
-        Plan plan = new Plan(current);
-
-        for (Task task : tasks) {
-        	if (task.weight > vehicle.capacity()) {
-        		// impossible solution
-        		return null;
-        	}
-            // move: current city => pickup location
-            for (City city : current.pathTo(task.pickupCity)) {
-                plan.appendMove(city);
-            }
-            
-            plan.appendPickup(task);
-
-            // move: pickup location => delivery location
-            for (City city : task.path()) {
-                plan.appendMove(city);
-            }
-
-            plan.appendDelivery(task);
-
-            // set current city
-            current = task.deliveryCity;
-        }
-        return plan;
-    }
+	public double dist_tt(Task ti, Task tj) {
+		if (tj == null) {
+			return 0;
+		}
+		List<City> city_path = ti.deliveryCity.pathTo(tj.pickupCity);
+		double distance = 0;
+		City prevCity = city_path.get(0);
+		for (int i = 1; i < city_path.size(); i++) {
+			distance += prevCity.distanceTo(city_path.get(i));
+			prevCity = city_path.get(i);
+		}
+		return distance;
+	}
+	
+	public double length(Task ti) {
+		if (ti == null) {
+			return 0;
+		}
+		return ti.pathLength();
+	}
+	
+	public double dist_tv(Vehicle vehicle, Task tj) {
+		if (tj == null) {
+			return 0;
+		}
+		List<City> city_path = vehicle.getCurrentCity().pathTo(tj.pickupCity);
+		double distance = 0;
+		City prevCity = city_path.get(0);
+		for (int i = 1; i < city_path.size(); i++) {
+			distance += prevCity.distanceTo(city_path.get(i));
+			prevCity = city_path.get(i);
+		}
+		return distance;
+	}
+	
+	public double costFn (Solution solution) { 
+		// the costFn is basically to sum up the cost of 
+		// doing all the tasks in order for each vehicle 
+		double cost = 0;
+		List<Task> tasks = new ArrayList<Task> (solution.nextTask_task.keySet());
+		for (int i = 0; i < tasks.size(); ++i) {
+			Task ti = tasks.get(i);
+			cost += (dist_tt(ti, solution.nextTask_task.get(ti)) + 
+					 length(solution.nextTask_task.get(ti))) * 
+					solution.vehicle_map.get(ti).costPerKm();
+		}
+		
+		for (Vehicle v: solution.vehicles) {
+			cost += (dist_tv(v, solution.nextTask_vehicle.get(v)) + 
+					 length(solution.nextTask_vehicle.get(v))) *
+					v.costPerKm();
+		}
+		return cost;
+	}
+	
+	public Solution localChoice(List<Solution> solutions) {
+		if (solutions.size() == 0) {
+			System.out.println("Error? Empty solutions");
+			return null;
+		}
+		List<Solution> best_solns = new ArrayList<Solution>();
+		List<Double> solns = new ArrayList<>();
+		
+		for (Solution solution : solutions) {
+			solns.add(costFn(solution));
+		}
+		
+		double best_cost = Collections.min(solns);
+		for (int i = 0; i < solns.size(); i++) {
+			if (solns.get(i) == best_cost) {
+				best_solns.add(solutions.get(i));
+			}
+		}
+		
+		Random rand = new Random();
+		return best_solns.get(rand.nextInt(best_solns.size()));
+	}
 }
